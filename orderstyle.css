@@ -1,0 +1,36 @@
+h2{
+    text-align: center;
+    color: white;
+}
+body{
+    background-image: url("bghome.jpg");
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    height: 100vh;
+}
+header{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+table{
+    width: 50vw;
+    height: 40vh;
+    color: white;
+    text-align: center;
+}
+input{
+    width: 95%;height: 5vh;
+}
+button{
+    background-color: black;
+    color: white;
+    font-weight: bolder;
+    padding: 8px 12px;
+    border-radius: 2px solid white;
+    cursor: pointer;
+}
+#final{
+    color: white;
+}

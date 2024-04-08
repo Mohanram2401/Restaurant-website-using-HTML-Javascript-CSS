@@ -1,0 +1,27 @@
+version: '3.9'
+
+services:
+
+    mongo_db:
+
+    container_name: db_cont
+    image: mongo: latest
+    restart: always
+    volumes:
+    - mongo_db:/data/db
+
+  api:
+
+    build:
+
+    ports:
+        -4000:3000
+    environment:
+    PORT: 3000
+    MONGODB URI: mogo://localhost:27017
+    DB_NAME: dock DB_USER: mohanram
+    DB PASS: mohan2401
+
+volumes:
+
+mongo_db: {}

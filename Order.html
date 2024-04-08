@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="orderstyle.css">
+    <title>Document</title>
+</head>
+<body>
+    <h2>Order food and Get Bill</h2>
+    <header>
+        <table border="1"> 
+            <tr>
+                <th>Dish Name</th>
+                <th>Price</th>
+                <th>Qunatity</th>
+            </tr>
+            <tr>
+                <th>Veg Pizaa</th>
+                <td>99</td>
+                <td><input type="text" id="i1"></td>
+            </tr>
+            <tr>
+                <th>Chicken Pizaa</th>
+                <td>159</td>
+                <td><input type="text" id="i2"></td>
+            </tr>
+            <tr>
+                <th>Veg Burger</th>
+                <td>99</td>
+                <td><input type="text" id="i3"></td>
+            </tr>
+            <tr>
+                <th>Chicken Burger</th>
+                <td>159</td>
+                <td><input type="text" id="i4"></td>
+            </tr>
+            <tr>
+                <th>Fresh Fruit Smoothies</th>
+                <td>79</td>
+                <td><input type="text" id="i5"></td>
+            </tr>
+            <tr>
+                <th>Chicken 65(100gm)</th>
+                <td>40</td>
+                <td><input type="text" id="i6"></td>
+            </tr>
+            <tr>
+                <th>Crispy Fried Chicken</th>
+                <td>149</td>
+                <td><input type="text" id="i7"></td>
+            </tr>
+            <tr>
+                <th>Veg Fish</th>
+                <td>99</td>
+                <td><input type="text" id="i8"></td>
+            </tr>
+            <tr>
+                <th>Mojitos</th>
+                <td>85</td>
+                <td><input type="text" id="i9"></td>
+            </tr>
+        </table>
+    </header>
+    <center>
+        <table>
+            <tr>
+                <th><button onclick="display()">Get Bill</button></th>
+                <th><td id="final"></td></th>
+            </tr>
+        </table>
+    </center>
+    <script>
+        var n1,n2,n3,n4,n5,n6,n7,n8,n9,r1,r2,r3,r4,r5,r6,r7,r8,r9,total;
+    
+function display(){
+    n1=document.getElementById("i1").value
+    n2=document.getElementById("i2").value
+    n3=document.getElementById("i3").value
+    n4=document.getElementById("i4").value
+    n5=document.getElementById("i5").value
+    n6=document.getElementById("i6").value
+    n7=document.getElementById("i7").value
+    n8=document.getElementById("i8").value
+    n9=document.getElementById("i9").value
+    r1=n1*99;
+    r2=n2*159;
+    r3=n3*99;
+    r4=n4*159;
+    r5=n5*79;
+    r6=n5*40;
+    r7=n5*149;
+    r8=n5*99;
+    r9=n5*85;
+    total=r1+r2+r3+r4+r5+r6+r7+r8+r9;
+    document.getElementById("final").innerText="Your Bill Amount is "+total;
+    
+}
+    </script>
+</body>
+</html>

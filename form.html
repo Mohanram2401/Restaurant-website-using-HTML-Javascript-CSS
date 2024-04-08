@@ -1,0 +1,104 @@
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel ="stylesheet" type="text/css" href="form.css">
+    <title>FORM</title>
+
+</head>
+<body>
+  <div id="frm">
+    <h1><center>Job Vacancy Form</center></h1>
+  <strong><form onsubmit="fun()" action="http://localhost:4000/" method="post" name="f1"  class="form" id="form">
+    <div class="form-control">
+        <center>
+            <label>FULL NAME : </label>
+            <input type="text" placeholder="Enter your Name" name="fullname" pattern="[a-z A-Z]{3,}"  required/>
+            <i class="fa-light fa-circle-check" style="color: #326c02;"></i>
+            <i class="fas fa-exclamation-circle"></i>
+            <br><br>
+          
+            <label> Where did You hear about us: </label>
+            <input type="text" placeholder=""  value="" id="roll number" name="rno" required />
+            <i class="fa-light fa-circle-check" style="color: #326c02;"></i>
+            <i class="fas fa-exclamation-circle"></i>
+            <br><br>
+          
+            <label>Employment Status : </label>
+            <select id="Department" name="Department">
+              <option value="fulltime">Full-Time</option>
+              <option value="parttime">Part-Time</option>
+              <option value="temp">Temporary</option>
+            </select>
+            <br><br>
+        
+            <label>ADDRESS : </label>
+            <textarea placeholder="Enter the Full Address" id="address" style="height:5300px width:800px " required ></textarea>
+            <i class="fa-light fa-circle-check" style="color: #326c02;"></i>
+            <i class="fas fa-exclamation-circle"></i>
+            <br><br>
+          
+            <label>CONTACT NUMBER : </label>
+            <input type="tel" id="cno" name="contac" pattern="[0-9]{10}" required/>
+            <br><br>
+  
+            <label>GENDER : </label>
+            <input type="radio" id="choice 1" name="GENDER" value="M">MALE
+            <input type="radio" id="choice 2" name="GENDER" value="F">FEMALE
+            <br><br>
+  
+            <label>MAIL ID : </label>
+            <input type="email" placeholder="Enter your mail" id="mail" required >
+            <br><br>
+
+            <label>Position applied for: </label>
+            <input type="checkbox"  id="jrole" >Deliveryboy</input>
+            <input type="checkbox"  id="jrole" >Server</input>
+            <input type="checkbox"  id="jrole" >Chef</input>
+            <br><br>
+          <div >
+          
+            <button type="submit" value="Submit" onclick="form()" class="btn btn-outline-primary">Submit</button>
+         
+          <input type="reset" value="Reset">
+          
+          </div>
+        </div>
+  </center>
+    
+</div>
+
+</strong></form>
+    
+    <script>
+      function fun()
+      {
+        alert("You have success fully registered")
+      }
+        function form()
+        {
+    const name = document.f1.fullname.value;
+    const rollno = document.f1.rollno.value;
+    var mailformat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    const phone = document.f1.cno.value;
+    
+    
+    if(fullname==""){
+    alert("Phone number must be 10 digit");
+  return false; 
+  }
+
+    if(mail.value.match(mailformat))
+{
+alert("You have entered an invalid email address!");
+document.f1.mail.focus();
+return false;
+}
+alert("Registered");
+        }
+
+    </script>
+</body>
+</html>

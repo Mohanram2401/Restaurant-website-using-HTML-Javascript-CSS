@@ -1,0 +1,154 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300&display=swap');
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Merriweather', serif;
+}
+#navbar{
+    position: sticky;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    padding: .5rem 5rem;
+    box-shadow: 5px 5px 20px rgba(0,0,0,0);
+    background-color: black;
+
+}
+.navbar .navbar-brand{
+    font-size: 25px;
+    font-weight: 800;
+    color:#29f700 !important;
+
+}
+#navbarSupportedContent{
+    color: #fff;
+    border-bottom: 2px solid transparent;
+
+}
+#navbarSupportedContent a:hover{
+    border-bottom: 2px solid #29f700;
+}
+#navbarSupportedContent button{
+    background: #29f700;
+    width: 5rem;
+    border-radius: 15px;
+}
+section{
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#home{
+    background:url(home.jpg);
+    background-size: cover;
+    background-position: center;
+    flex-direction: column;
+}
+#home h1{
+    font-size: 100px;
+    color: black;
+    letter-spacing: 3px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    text-shadow: 0px 1px 0px #1c1717 ,
+                 0px 1px 0px #1c1717 ,
+                 0px 1px 0px #1c1717 ,
+                 0px 1px 0px #1c1717 ,
+                 0px 1px 0px #1c1717 ,
+                 0px 1px 0px #1c1717,
+                 0px 1px 0px #1c1717 ;
+
+}
+#home p{
+    font-size: 18px;
+    color: black;
+
+}
+#home .input-group{
+    width: 40%;
+    height: 45px;
+}
+.signin{
+    background-color: #29f700 !important;
+    color: white !important;
+    box-shadow: 2px 4px 5px rgba(0,0,0,0);
+
+}
+#about{
+    background: linear-gradient(to right,#ea1d6f,#eb466b 100%);
+}
+#about img{
+    padding-left: 175px;
+    padding-top: 60px;
+    width: 75%;
+    height: 75%;
+}
+#about h1{
+    font-weight: 800;
+    font-size: 50px;
+    color: white;
+}
+#about p{
+    color: white;
+}
+#product{
+    background: #e5e5e5;
+}
+#product h1{
+    font-size: 50px;
+    letter-spacing: 2px;
+    font-weight: 700;
+}
+
+#product img{
+    width: 200px;
+    height: 200px;
+}
+.card{
+    width: 250px;
+    height: 300px;
+    background: #e5e5e5 !important;
+    border: none !important;
+    box-shadow: 15px 20px 20px rgba(0,0,0,.3),
+                inset 4px 4px 10px white;
+    border-radius: 20px;
+    overflow: hidden;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 60px  ;
+}
+.card:hover{
+    box-shadow: inset 5px 5px 10px rgba(0,0,0,.3);
+                inset: -4px -4px 10px white;
+    transition: .2s;
+}
+#contact img{
+    height: 100%;
+}
+.box{
+    width: 80% !important;
+ 
+    margin-top: 10px;
+}
+form{
+    display: flex;
+    flex-direction: column;
+}
+#contact input{
+    margin: 10px 0px;
+}
+#contact textarea{
+    margin: 10px 0px;
+}
+footer{
+    width: 100px;
+    height: 30px;
+    background: rgba(0,0,0,.8);
+    margin-top: -30px;
+    text-align: center;
+    color: white;
+    padding: 3px;
+}
